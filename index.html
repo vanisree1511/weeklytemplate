@@ -1,0 +1,681 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weekly Schedule Poster Generator</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: #e8e8e8;
+    padding: 25px;
+}
+
+.container {
+    max-width: 1100px;
+    margin: auto;
+}
+
+h2 {
+    margin-bottom: 20px;
+}
+
+.editor {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    box-shadow: 0 3px 12px #0001;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.topic-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 2fr auto;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+button {
+    padding: 11px 18px;
+    border: none;
+    border-radius: 6px;
+    background: #e71924;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 15px;
+}
+
+button.secondary {
+    background: #222;
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* POSTER */
+
+#poster {
+    width: 1000px;
+    height: 670px;
+    margin: 25px auto;
+    background: white;
+    position: relative;
+    overflow: hidden;
+    color: #101010;
+    padding: 0;
+    box-shadow: 0 5px 25px #0003;
+}
+
+/* Header */
+
+.poster-header {
+    height: 145px;
+    background: #111;
+    color: white;
+    position: relative;
+    padding: 20px 30px;
+    overflow: hidden;
+}
+
+.poster-header::before {
+    content: "";
+    position: absolute;
+    width: 480px;
+    height: 210px;
+    background: white;
+    left: -80px;
+    top: -100px;
+    border-radius: 0 0 55% 0;
+    transform: rotate(-8deg);
+}
+
+.poster-header::after {
+    content: "";
+    position: absolute;
+    background: #ed1826;
+    height: 22px;
+    width: 110%;
+    left: -20px;
+    bottom: 0;
+    transform: rotate(-5deg);
+}
+
+.brand {
+    position: absolute;
+    z-index: 2;
+    left: 30px;
+    top: 30px;
+    color: #111;
+}
+
+.brand h2 {
+    font-size: 21px;
+    margin: 0;
+}
+
+.brand p {
+    color: #e71924;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    margin-top: 5px;
+}
+
+.header-title {
+    position: absolute;
+    z-index: 2;
+    left: 365px;
+    top: 5px;
+    text-align: center;
+}
+
+.header-title h1 {
+    font-size: 37px;
+    font-weight: 800;
+}
+
+.header-title h2 {
+    background: #ed1826;
+    padding: 5px 25px;
+    border-radius: 7px;
+    font-size: 30px;
+    font-style: italic;
+    margin: 2px 0;
+}
+
+.module-logo {
+    position: absolute;
+    right: 30px;
+    top: 22px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 3;
+}
+
+.js-box {
+    background: #0d0d0d;
+    padding: 12px;
+    font-size: 30px;
+    font-weight: bold;
+    border-radius: 10px;
+}
+
+/* Date */
+
+.date-bar {
+    position: absolute;
+    z-index: 4;
+    top: 105px;
+    left: 280px;
+    background: white;
+    color: black;
+    padding: 9px 22px;
+    border-radius: 30px;
+    font-weight: bold;
+    font-size: 17px;
+}
+
+/* Trainer information */
+
+.info-bar {
+    margin: 12px 22px;
+    height: 57px;
+    border: 2px solid #333;
+    border-radius: 17px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    font-size: 18px;
+    font-weight: bold;
+    position: relative;
+    z-index: 5;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.info-value {
+    background: #df1724;
+    color: white;
+    padding: 8px 13px;
+    border-radius: 12px;
+}
+
+/* Schedule table */
+
+.schedule {
+    margin: 10px 22px;
+    border: 2px solid #bbb;
+    border-radius: 18px;
+    overflow: hidden;
+}
+
+.table-header {
+    height: 40px;
+    background: #111;
+    color: white;
+    display: grid;
+    grid-template-columns: 24% 76%;
+    text-align: center;
+    align-items: center;
+    font-size: 21px;
+    font-weight: bold;
+}
+
+.schedule-row {
+    min-height: 58px;
+    display: grid;
+    grid-template-columns: 24% 76%;
+    border-bottom: 1px solid #ccc;
+}
+
+.schedule-row:last-child {
+    border-bottom: none;
+}
+
+.day-cell {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 5px 25px;
+    background: #f2f2f2;
+}
+
+.schedule-row:nth-child(even) .day-cell {
+    background: #ffe3e5;
+}
+
+.day-icon {
+    font-size: 27px;
+    color: #df1724;
+}
+
+.day-name {
+    font-size: 21px;
+    font-weight: bold;
+}
+
+.day-date {
+    font-size: 16px;
+    margin-top: 2px;
+}
+
+.topic-cell {
+    display: flex;
+    align-items: center;
+    padding: 10px 28px;
+    font-size: 21px;
+    font-weight: bold;
+    background: linear-gradient(90deg, #fafafa, #eee);
+}
+
+.schedule-row:last-child .day-cell {
+    background: #df1724;
+    color: white;
+}
+
+.schedule-row:last-child .day-icon {
+    color: white;
+}
+
+.schedule-row:last-child .topic-cell {
+    background: #ffe6e7;
+}
+
+.check {
+    margin-left: auto;
+    background: #df1724;
+    color: white;
+    border-radius: 50%;
+    padding: 6px 11px;
+    font-size: 23px;
+}
+
+/* Footer */
+
+.footer {
+    height: 70px;
+    margin: 18px 32px;
+    background: #111;
+    border-radius: 20px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.footer-target {
+    font-size: 35px;
+}
+
+.footer-module {
+    background: #e71924;
+    padding: 10px 30px;
+    transform: skew(-15deg);
+    font-style: italic;
+}
+
+/* Responsive editor */
+
+@media(max-width: 700px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .topic-row {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    #poster {
+        transform-origin: top left;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Weekly Schedule Poster Generator</h2>
+
+<div class="editor">
+
+    <div class="form-grid">
+
+        <div>
+            <label>Academy Name</label>
+            <input id="academy" value="FULLSTACK EXPERTS">
+        </div>
+
+        <div>
+            <label>Module Name</label>
+            <input id="module" value="module">
+        </div>
+
+        <div>
+            <label>Trainer Name</label>
+            <input id="trainer" value="Trainername">
+        </div>
+
+        <div>
+            <label>Batch Numbers</label>
+            <input id="batch" value="----">
+        </div>
+
+        <div>
+            <label>Start Date</label>
+            <input id="startDate" type="date" value="startDate">
+        </div>
+
+        <div>
+            <label>End Date</label>
+            <input id="endDate" type="date" value="endDate">
+        </div>
+
+        <div>
+            <label>Weekly Target</label>
+            <input id="target" value="Topic Completion">
+        </div>
+
+        <div>
+            <label>Schedule Title</label>
+            <input id="scheduleTitle" value="Weekly Schedule">
+        </div>
+
+    </div>
+
+    <h3 style="margin-top:25px;">Daily Topics</h3>
+
+    <div id="topicInputs"></div>
+
+    <div class="actions">
+        <button type="button" onclick="addRow()">+ Add Day</button>
+        <button type="button" onclick="generatePoster()">Generate Poster</button>
+        <button type="button" onclick="downloadPoster()" class="secondary">
+            Download PNG
+        </button>
+    </div>
+
+</div>
+
+<!-- POSTER -->
+
+<div id="poster">
+
+    <div class="poster-header">
+
+        <div class="brand">
+            <h2 id="pAcademy">FULLSTACK EXPERTS</h2>
+            <p>ACADEMY - CODE SMART</p>
+        </div>
+
+        <div class="header-title">
+            <h1 id="pModule">JavaScript Module</h1>
+            <h2 id="pScheduleTitle">Weekly Schedule</h2>
+        </div>
+
+        <!-- <div class="module-logo">
+            <div class="js-box" id="pLogo">js</div>
+            <h2 id="pModuleSide">JavaScript<br>Module</h2>
+        </div> -->
+
+    </div>
+
+    <div class="date-bar">
+        📅 <span id="pDateRange">16 – 20 November 2026</span>
+        &nbsp; | &nbsp; 📅 <span id="pWeekdays">Monday – Friday</span>
+    </div>
+
+    <div class="info-bar">
+
+        <div class="info-item">
+            👤 Trainer Name:
+            <span class="info-value" id="pTrainer">Sir</span>
+        </div>
+
+        <div class="info-item">
+            👥 Batch No:
+            <span class="info-value" id="pBatch">60 & 61</span>
+        </div>
+
+        <div class="info-item">
+            ▱ Module:
+            <span class="info-value" id="pModuleInfo">JavaScript</span>
+        </div>
+
+    </div>
+
+    <div class="schedule">
+
+        <div class="table-header">
+            <div>▦ &nbsp; Day</div>
+            <div>▱ &nbsp; Topic / Heading</div>
+        </div>
+
+        <div id="posterRows"></div>
+
+    </div>
+
+    <div class="footer">
+        <div class="footer-target">🎯 Weekly Target</div>
+        <div class="footer-module" id="pTarget">
+            JavaScript Module Completion
+        </div>
+    </div>
+
+</div>
+
+</div>
+
+<script>
+
+const topicInputs = document.getElementById("topicInputs");
+
+function addRow(day="", date="", topic="") {
+
+    const row = document.createElement("div");
+    row.className = "topic-row";
+
+    row.innerHTML = `
+        <input class="dayInput" placeholder="Day name" value="${day}">
+        <input class="dateInput" placeholder="Date (e.g. 16 Nov 2026)" value="${date}">
+        <input class="topicInput" placeholder="Topic name" value="${topic}">
+        <button type="button" onclick="this.parentElement.remove()"
+            style="margin:0;background:#555">X</button>
+    `;
+
+    topicInputs.appendChild(row);
+}
+
+addRow("Monday", "16 Nov 2026", "Asynchronous JavaScript and Promises");
+addRow("Tuesday", "17 Nov 2026", "Promises, Callback Hell and Fetch API");
+addRow("Wednesday", "18 Nov 2026", "Async/Await and Background Process of Asynchronous JavaScript");
+addRow("Thursday", "19 Nov 2026", "DOM Events");
+addRow("Friday", "20 Nov 2026", "DOM Event Handling and JavaScript Module Completion");
+
+
+function formatDate(dateString) {
+
+    if (!dateString) return "";
+
+    const date = new Date(dateString + "T00:00:00");
+
+    return date.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric"
+    });
+}
+
+
+function generatePoster() {
+
+    const module = document.getElementById("module").value;
+    const trainer = document.getElementById("trainer").value;
+    const batch = document.getElementById("batch").value;
+    const academy = document.getElementById("academy").value;
+    const target = document.getElementById("target").value;
+
+    document.getElementById("pAcademy").textContent = academy;
+    document.getElementById("pModule").textContent = module + " Module";
+    // document.getElementById("pModuleSide").innerHTML = module + "<br>Module";
+    document.getElementById("pModuleInfo").textContent = module;
+    // document.getElementById("pLogo").textContent =
+    // "";
+
+    document.getElementById("pTrainer").textContent = trainer;
+    document.getElementById("pBatch").textContent = batch;
+    document.getElementById("pTarget").textContent = target;
+    document.getElementById("pScheduleTitle").textContent =
+        document.getElementById("scheduleTitle").value;
+
+    const start = document.getElementById("startDate").value;
+    const end = document.getElementById("endDate").value;
+
+    document.getElementById("pDateRange").textContent =
+        start && end
+        ? formatDate(start).replace(/(\d{2})/, "$1") +
+          " – " + formatDate(end)
+        : "";
+
+    const rows = [...document.querySelectorAll(".topic-row")];
+
+    const data = rows.map(row => ({
+        day: row.querySelector(".dayInput").value,
+        date: row.querySelector(".dateInput").value,
+        topic: row.querySelector(".topicInput").value
+    }));
+
+    const firstDay = data[0]?.day || "";
+    const lastDay = data[data.length - 1]?.day || "";
+
+    document.getElementById("pWeekdays").textContent =
+        firstDay + " – " + lastDay;
+
+    const posterRows = document.getElementById("posterRows");
+    posterRows.innerHTML = "";
+
+    data.forEach((item, index) => {
+
+        const row = document.createElement("div");
+        row.className = "schedule-row";
+
+        const dayCell = document.createElement("div");
+        dayCell.className = "day-cell";
+
+        const icon = document.createElement("div");
+        icon.className = "day-icon";
+        icon.textContent = "▦";
+
+        const dayDetails = document.createElement("div");
+
+        const dayName = document.createElement("div");
+        dayName.className = "day-name";
+        dayName.textContent = item.day;
+
+        const dayDate = document.createElement("div");
+        dayDate.className = "day-date";
+        dayDate.textContent = item.date;
+
+        dayDetails.append(dayName, dayDate);
+        dayCell.append(icon, dayDetails);
+
+        const topicCell = document.createElement("div");
+        topicCell.className = "topic-cell";
+        topicCell.textContent = item.topic;
+
+        if (index === data.length - 1) {
+            const check = document.createElement("span");
+            check.className = "check";
+            check.textContent = "✓";
+            topicCell.appendChild(check);
+        }
+
+        row.append(dayCell, topicCell);
+        posterRows.appendChild(row);
+    });
+
+    // Adjust row heights based on number of days
+    const rowHeight = Math.min(58, 300 / Math.max(data.length, 1));
+
+    document.querySelectorAll(".schedule-row").forEach(row => {
+        row.style.minHeight = rowHeight + "px";
+    });
+}
+
+
+async function downloadPoster() {
+
+    generatePoster();
+
+    const poster = document.getElementById("poster");
+
+    try {
+        const canvas = await html2canvas(poster, {
+            scale: 2,
+            backgroundColor: "#ffffff",
+            useCORS: true
+        });
+
+        const link = document.createElement("a");
+
+        link.download =
+            document.getElementById("module").value.replace(/\s+/g, "_")
+            + "_Weekly_Schedule.png";
+
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+
+    } catch (error) {
+        alert("Unable to generate image. Please try again.");
+        console.error(error);
+    }
+}
+
+generatePoster();
+
+</script>
+
+</body>
+</html>
